@@ -1,8 +1,10 @@
-RUN_DIR      := ${PWD}
+RUN_DIR      ?= $(CURDIR)
 
 TESTCASE     := ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/rv32ui-p-addi
 PATCHCASE    :=
 DUMPWAVE     := 1
+RUN_PLUSARGS_EXTRA :=
+TB_TOP       ?= tb_top
 
 SMIC130LL    := 0
 GATE_SIM     := 0
@@ -14,13 +16,21 @@ VSRC_DIR     := ${RUN_DIR}/../install/rtl
 VTB_DIR      := ${RUN_DIR}/../install/tb
 TESTNAME     := $(notdir $(patsubst %.dump,%,${TESTCASE}.dump))
 TEST_RUNDIR  := ${TESTNAME}
+RUN_PLUSARGS := +DUMPWAVE=${DUMPWAVE} +TESTCASE=${TESTCASE} +SIM_TOOL=${SIM_TOOL}
+
+ifneq ($(strip ${PATCHCASE}),)
+RUN_PLUSARGS += +PATCHCASE=${PATCHCASE}
+endif
+ifneq ($(strip ${RUN_PLUSARGS_EXTRA}),)
+RUN_PLUSARGS += ${RUN_PLUSARGS_EXTRA}
+endif
 
 RTL_V_FILES		:= $(wildcard ${VSRC_DIR}/*/*.v ${VSRC_DIR}/*/*/*.v)
 TB_V_FILES		:= $(wildcard ${VTB_DIR}/*.v)
 
 # The following portion is depending on the EDA tools you are using, Please add them by yourself according to your EDA vendors
 #To-ADD: to add the simulatoin tool
-SIM_TOOL      := vcs
+SIM_TOOL      ?= vcs
 
 #To-ADD: to add the simulatoin tool options 
 ifeq ($(SIM_TOOL),vcs)
@@ -28,7 +38,7 @@ SIM_OPTIONS   := +v2k -sverilog -q +lint=all,noSVA-NSVU,noVCDE,noUI,noSVA-CE,noS
 SIM_OPTIONS   += +incdir+"${VSRC_DIR}/core/"+"${VSRC_DIR}/perips/"+"${VSRC_DIR}/perips/apb_i2c/"
 endif
 ifeq ($(SIM_TOOL),iverilog)
-SIM_OPTIONS   := -o vvp.exec -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -I "${VSRC_DIR}/perips/apb_i2c/" -D DISABLE_SV_ASSERTION=1 -g2005-sv
+SIM_OPTIONS   := -o vvp.exec -s ${TB_TOP} -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -I "${VSRC_DIR}/perips/apb_i2c/" -D DISABLE_SV_ASSERTION=1 -g2005-sv
 endif
 
 
@@ -57,7 +67,7 @@ ifeq ($(SIM_TOOL),vcs)
 SIM_EXEC      := ${RUN_DIR}/simv +ntb_random_seed_automatic
 endif
 ifeq ($(SIM_TOOL),iverilog)
-SIM_EXEC      := vvp ${RUN_DIR}/vvp.exec -lxt2	
+SIM_EXEC      := stdbuf -o0 -e0 vvp ${RUN_DIR}/vvp.exec -lxt2
 endif
 
 
@@ -129,7 +139,7 @@ wave:
 run: compile
 	rm -rf ${TEST_RUNDIR}
 	mkdir ${TEST_RUNDIR}
-	cd ${TEST_RUNDIR}; ${SIM_EXEC} +DUMPWAVE=${DUMPWAVE} +TESTCASE=${TESTCASE} +PATCHCASE=${PATCHCASE} +SIM_TOOL=${SIM_TOOL} 2>&1 | tee ${TESTNAME}.log; cd ${RUN_DIR}; 
+	cd ${TEST_RUNDIR}; ${SIM_EXEC} ${RUN_PLUSARGS} 2>&1 | tee ${TESTNAME}.log; cd ${RUN_DIR}; 
 
 
 .PHONY: run clean all 

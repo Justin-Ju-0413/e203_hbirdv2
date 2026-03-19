@@ -1,8 +1,9 @@
-SIM_DIR     := ${PWD}
-RUN_DIR      := ${PWD}/run
+SIM_DIR     := $(CURDIR)
+RUN_DIR     := $(CURDIR)/run
 
 TESTNAME     := rv32ui-p-add 
 TESTCASE     := ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/${TESTNAME}
+PATCHCASE    ?=
 
 SIM          := iverilog 
 DUMPWAVE     := 1
@@ -24,7 +25,7 @@ install:
 ${RUN_DIR}:
 	mkdir -p ${RUN_DIR}
 	rm -f ${RUN_DIR}/Makefile
-	ln -s ${SIM_DIR}/bin/run.makefile ${RUN_DIR}/Makefile
+	ln -sfn ${SIM_DIR}/bin/run.makefile ${RUN_DIR}/Makefile
 
 compile: ${RUN_DIR}
 	make compile RUN_DIR=${RUN_DIR} SIM_TOOL=${SIM} -C ${RUN_DIR}
@@ -33,7 +34,7 @@ wave: ${RUN_DIR}
 	make wave TESTCASE=${TESTCASE} SIM_TOOL=${SIM} RUN_DIR=${RUN_DIR} -C ${RUN_DIR}
 
 run_test: compile
-	make run DUMPWAVE=${DUMPWAVE} TESTCASE=${TESTCASE} SIM_TOOL=${SIM} RUN_DIR=${RUN_DIR} -C ${RUN_DIR}
+	make run DUMPWAVE=${DUMPWAVE} TESTCASE=${TESTCASE} PATCHCASE=${PATCHCASE} SIM_TOOL=${SIM} RUN_DIR=${RUN_DIR} -C ${RUN_DIR}
 
 SELF_TESTS := $(patsubst %.dump,%,$(wildcard ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/rv32uc-p*.dump))
 ifeq ($(core_name),${E203})
@@ -60,4 +61,3 @@ clean:
 	rm -rf install
 
 .PHONY: compile run install clean all run_test regress regress_prepare regress_run regress_collect 
-

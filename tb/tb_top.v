@@ -21,6 +21,7 @@ module tb_top();
   `define PC_AFTER_SETMTVEC     `E203_PC_SIZE'h8000015C
 
   wire [`E203_XLEN-1:0] x3 = `EXU.u_e203_exu_regfile.rf_r[3];
+  wire [`E203_XLEN-1:0] x11 = `EXU.u_e203_exu_regfile.rf_r[11];
   wire [`E203_PC_SIZE-1:0] pc = `EXU.u_e203_exu_commit.alu_cmt_i_pc;
   wire [`E203_PC_SIZE-1:0] pc_vld = `EXU.u_e203_exu_commit.alu_cmt_i_valid;
   wire nice_req_valid = `U_CPU.nice_req_valid;
@@ -42,6 +43,8 @@ module tb_top();
   reg seen_nice_ready_low;
   reg seen_rstat_320;
   reg seen_patch_entry;
+  reg seen_rst_release;
+  integer progress_stride;
 
   always @(posedge hfclk or negedge rst_n)
   begin 
@@ -67,11 +70,17 @@ module tb_top();
         seen_nice_ready_low <= 1'b0;
         seen_rstat_320 <= 1'b0;
         seen_patch_entry <= 1'b0;
+        seen_rst_release <= 1'b0;
     end
     else begin
         cycle_count <= cycle_count + 1'b1;
-        if((cycle_count == 32'd100) || (cycle_count == 32'd1000) || (cycle_count == 32'd10000) || (cycle_count == 32'd100000)) begin
-            $display("[HB] cycle=%0d pc=%h pc_vld=%0d", cycle_count, pc, pc_vld);
+        if((~seen_rst_release) && (progress_stride != 0)) begin
+            seen_rst_release <= 1'b1;
+            $display("[RST_RELEASED] cycle=%0d pc=%h pc_vld=%0d", cycle_count, pc, pc_vld);
+        end
+        if((progress_stride != 0) && ((cycle_count % progress_stride) == 0)) begin
+            $display("[HB] cycle=%0d pc=%h pc_vld=%0d nice_req_valid=%0d nice_rsp_valid=%0d",
+                     cycle_count, pc, pc_vld, nice_req_valid, nice_rsp_valid);
         end
         if(pc_vld && (pc == `PC_AFTER_SETMTVEC) && ~seen_patch_entry) begin
             seen_patch_entry <= 1'b1;
@@ -84,7 +93,7 @@ module tb_top();
             seen_nice_ready_low <= 1'b1;
         end
         if(nice_req_valid && nice_req_ready) begin
-            $display("[NICE_REQ] cycle=%0d inst=%h rs1=%h rs2=%h", cycle_count, nice_req_inst, nice_req_rs1, nice_req_rs2);
+            $display("[NICE_REQ] cycle=%0d inst=%h rs1=%h rs2=%h x11=%h", cycle_count, nice_req_inst, nice_req_rs1, nice_req_rs2, x11);
         end
         if(nice_rsp_valid && nice_rsp_ready) begin
             $display("[NICE_RSP] cycle=%0d rdat=%0d err=%0d", cycle_count, nice_rsp_rdat, nice_rsp_err);
@@ -210,6 +219,7 @@ module tb_top();
   reg[8*300:1] testcase;
   reg[8*300:1] patchcase;
   integer dumpwave;
+  integer rst_release_delay;
 
   initial begin
     $display("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");  
@@ -219,12 +229,23 @@ module tb_top();
     if($value$plusargs("PATCHCASE=%s",patchcase))begin
       $display("PATCHCASE=%s",patchcase);
     end
+    rst_release_delay = 120;
+    progress_stride = 0;
+    if($value$plusargs("RST_RELEASE=%d", rst_release_delay)) begin
+      $display("RST_RELEASE=%0d", rst_release_delay);
+    end
+    if($value$plusargs("PROGRESS_STRIDE=%d", progress_stride)) begin
+      $display("PROGRESS_STRIDE=%0d", progress_stride);
+    end
 
     pc_write_to_host_flag <=0;
     clk   <=0;
     lfextclk   <=0;
     rst_n <=0;
-    #120 rst_n <=1;
+    #(rst_release_delay) rst_n <=1;
+    if(progress_stride != 0) begin
+      $display("[RST_DEASSERT] simtime=%0t delay=%0d", $time, rst_release_delay);
+    end
 
     @(pc_write_to_host_cnt == 32'd8) #10 rst_n <=1;
 `ifdef ENABLE_TB_FORCE
