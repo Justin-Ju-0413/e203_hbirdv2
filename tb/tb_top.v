@@ -12,6 +12,7 @@ module tb_top();
   `define CPU_TOP u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.u_e203_cpu_top
   `define EXU `CPU_TOP.u_e203_cpu.u_e203_core.u_e203_exu
   `define ITCM `CPU_TOP.u_e203_srams.u_e203_itcm_ram.u_e203_itcm_gnrl_ram.u_sirv_sim_ram
+  `define U_CPU u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.u_e203_cpu_top.u_e203_cpu
 
   `define PC_WRITE_TOHOST       `E203_PC_SIZE'h80000086
   `define PC_EXT_IRQ_BEFOR_MRET `E203_PC_SIZE'h800000a6
@@ -22,12 +23,25 @@ module tb_top();
   wire [`E203_XLEN-1:0] x3 = `EXU.u_e203_exu_regfile.rf_r[3];
   wire [`E203_PC_SIZE-1:0] pc = `EXU.u_e203_exu_commit.alu_cmt_i_pc;
   wire [`E203_PC_SIZE-1:0] pc_vld = `EXU.u_e203_exu_commit.alu_cmt_i_valid;
+  wire nice_req_valid = `U_CPU.nice_req_valid;
+  wire nice_req_ready = `U_CPU.nice_req_ready;
+  wire [`E203_XLEN-1:0] nice_req_inst = `U_CPU.nice_req_inst;
+  wire [`E203_XLEN-1:0] nice_req_rs1 = `U_CPU.nice_req_rs1;
+  wire [`E203_XLEN-1:0] nice_req_rs2 = `U_CPU.nice_req_rs2;
+  wire nice_rsp_valid = `U_CPU.nice_rsp_multicyc_valid;
+  wire nice_rsp_ready = `U_CPU.nice_rsp_multicyc_ready;
+  wire [`E203_XLEN-1:0] nice_rsp_rdat = `U_CPU.nice_rsp_multicyc_dat;
+  wire nice_rsp_err = `U_CPU.nice_rsp_multicyc_err;
 
   reg [31:0] pc_write_to_host_cnt;
   reg [31:0] pc_write_to_host_cycle;
   reg [31:0] valid_ir_cycle;
   reg [31:0] cycle_count;
   reg pc_write_to_host_flag;
+  reg seen_nice_req;
+  reg seen_nice_ready_low;
+  reg seen_rstat_320;
+  reg seen_patch_entry;
 
   always @(posedge hfclk or negedge rst_n)
   begin 
@@ -49,9 +63,39 @@ module tb_top();
   begin 
     if(rst_n == 1'b0) begin
         cycle_count <= 32'b0;
+        seen_nice_req <= 1'b0;
+        seen_nice_ready_low <= 1'b0;
+        seen_rstat_320 <= 1'b0;
+        seen_patch_entry <= 1'b0;
     end
     else begin
         cycle_count <= cycle_count + 1'b1;
+        if((cycle_count == 32'd100) || (cycle_count == 32'd1000) || (cycle_count == 32'd10000) || (cycle_count == 32'd100000)) begin
+            $display("[HB] cycle=%0d pc=%h pc_vld=%0d", cycle_count, pc, pc_vld);
+        end
+        if(pc_vld && (pc == `PC_AFTER_SETMTVEC) && ~seen_patch_entry) begin
+            seen_patch_entry <= 1'b1;
+            $display("[PC] cycle=%0d reached post_mtvec at pc=%h", cycle_count, pc);
+        end
+        if(nice_req_valid) begin
+            seen_nice_req <= 1'b1;
+        end
+        if(seen_nice_req && ~nice_req_ready) begin
+            seen_nice_ready_low <= 1'b1;
+        end
+        if(nice_req_valid && nice_req_ready) begin
+            $display("[NICE_REQ] cycle=%0d inst=%h rs1=%h rs2=%h", cycle_count, nice_req_inst, nice_req_rs1, nice_req_rs2);
+        end
+        if(nice_rsp_valid && nice_rsp_ready) begin
+            $display("[NICE_RSP] cycle=%0d rdat=%0d err=%0d", cycle_count, nice_rsp_rdat, nice_rsp_err);
+            if((nice_rsp_err == 1'b0) && (nice_rsp_rdat == 32'd320)) begin
+                seen_rstat_320 <= 1'b1;
+            end
+        end
+        if(seen_nice_req && seen_nice_ready_low && seen_rstat_320) begin
+            $display("[NICE_SUMMARY] request_seen=1 ready_low_seen=1 rstat_320_seen=1");
+            $finish;
+        end
     end
   end
 
@@ -74,7 +118,6 @@ module tb_top();
   `define SFT_IRQ u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.clint_sft_irq
   `define TMR_IRQ u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.clint_tmr_irq
 
-  `define U_CPU u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.u_e203_cpu_top.u_e203_cpu
   `define ITCM_BUS_ERR `U_CPU.u_e203_itcm_ctrl.sram_icb_rsp_err
   `define ITCM_BUS_READ `U_CPU.u_e203_itcm_ctrl.sram_icb_rsp_read
   `define STATUS_MIE   `U_CPU.u_e203_core.u_e203_exu.u_e203_exu_commit.u_e203_exu_excp.status_mie_r
@@ -165,12 +208,16 @@ module tb_top();
 `endif
 
   reg[8*300:1] testcase;
+  reg[8*300:1] patchcase;
   integer dumpwave;
 
   initial begin
     $display("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");  
     if($value$plusargs("TESTCASE=%s",testcase))begin
       $display("TESTCASE=%s",testcase);
+    end
+    if($value$plusargs("PATCHCASE=%s",patchcase))begin
+      $display("PATCHCASE=%s",patchcase);
     end
 
     pc_write_to_host_flag <=0;
@@ -194,8 +241,11 @@ module tb_top();
         $display("~~~~~~~~~~The valid Instruction Count: %d ~~~~~~~~~~~~~", valid_ir_cycle);
         $display("~~~~~The test ending reached at cycle: %d ~~~~~~~~~~~~~", pc_write_to_host_cycle);
         $display("~~~~~~~~~~~~~~~The final x3 Reg value: %d ~~~~~~~~~~~~~", x3);
+        $display("~~~~~~~~~~~~~~~NICE request seen: %0d ~~~~~~~~~~~~~~~~~", seen_nice_req);
+        $display("~~~~~~~~~~~~ NICE req_ready low seen: %0d ~~~~~~~~~~~~~", seen_nice_ready_low);
+        $display("~~~~~~~~~~~~~~~RSTAT returned 320: %0d ~~~~~~~~~~~~~~~~", seen_rstat_320);
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    if (x3 == 1) begin
+    if ((x3 == 1) && seen_nice_req && seen_nice_ready_low && seen_rstat_320) begin
         $display("~~~~~~~~~~~~~~~~ TEST_PASS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         $display("~~~~~~~~~ #####     ##     ####    #### ~~~~~~~~~~~~~~~~");
@@ -268,6 +318,9 @@ module tb_top();
     reg [7:0] itcm_mem [0:(`E203_ITCM_RAM_DP*8)-1];
     initial begin
       $readmemh({testcase, ".verilog"}, itcm_mem);
+      if($value$plusargs("PATCHCASE=%s",patchcase)) begin
+        $readmemh({patchcase, ".verilog"}, itcm_mem);
+      end
 
       for (i=0;i<(`E203_ITCM_RAM_DP);i=i+1) begin
           `ITCM.mem_r[i][00+7:00] = itcm_mem[i*8+0];
@@ -355,5 +408,3 @@ e203_soc_top u_e203_soc_top(
 
 
 endmodule
-
-
