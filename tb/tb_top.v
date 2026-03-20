@@ -21,7 +21,6 @@ module tb_top();
   `define PC_AFTER_SETMTVEC     `E203_PC_SIZE'h8000015C
 
   wire [`E203_XLEN-1:0] x3 = `EXU.u_e203_exu_regfile.rf_r[3];
-  wire [`E203_XLEN-1:0] x11 = `EXU.u_e203_exu_regfile.rf_r[11];
   wire [`E203_PC_SIZE-1:0] pc = `EXU.u_e203_exu_commit.alu_cmt_i_pc;
   wire [`E203_PC_SIZE-1:0] pc_vld = `EXU.u_e203_exu_commit.alu_cmt_i_valid;
   wire nice_req_valid = `U_CPU.nice_req_valid;
@@ -93,7 +92,7 @@ module tb_top();
             seen_nice_ready_low <= 1'b1;
         end
         if(nice_req_valid && nice_req_ready) begin
-            $display("[NICE_REQ] cycle=%0d inst=%h rs1=%h rs2=%h x11=%h", cycle_count, nice_req_inst, nice_req_rs1, nice_req_rs2, x11);
+            $display("[NICE_REQ] cycle=%0d inst=%h rs1=%h rs2=%h", cycle_count, nice_req_inst, nice_req_rs1, nice_req_rs2);
         end
         if(nice_rsp_valid && nice_rsp_ready) begin
             $display("[NICE_RSP] cycle=%0d rdat=%0d err=%0d", cycle_count, nice_rsp_rdat, nice_rsp_err);

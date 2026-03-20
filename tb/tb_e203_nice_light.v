@@ -46,16 +46,20 @@ module tb_e203_nice_light;
   reg seen_rsp_320;
 
   localparam [6:0] NICE_OPCODE = 7'h0b;
-  localparam [2:0] F3_WLOAD = 3'b000;
-  localparam [2:0] F3_DLOAD = 3'b001;
-  localparam [2:0] F3_COMP  = 3'b010;
-  localparam [2:0] F3_RSTAT = 3'b011;
-  localparam [2:0] F3_CLEAR = 3'b100;
+  localparam [2:0] X_NONE    = 3'b000;
+  localparam [2:0] X_RS1RS2  = 3'b011;
+  localparam [2:0] X_RD      = 3'b100;
+  localparam [6:0] FN_WLOAD  = 7'd0;
+  localparam [6:0] FN_DLOAD  = 7'd1;
+  localparam [6:0] FN_COMP   = 7'd2;
+  localparam [6:0] FN_RSTAT  = 7'd3;
+  localparam [6:0] FN_CLEAR  = 7'd4;
 
   function [31:0] make_nice_instr;
-    input [2:0] funct3;
+    input [2:0] xspec;
+    input [6:0] funct7;
     begin
-      make_nice_instr = {17'b0, funct3, 5'b0, NICE_OPCODE};
+      make_nice_instr = {funct7, 5'b0, 5'b0, xspec, 5'b0, NICE_OPCODE};
     end
   endfunction
 
@@ -174,23 +178,23 @@ module tb_e203_nice_light;
     rst_n = 1'b1;
     $display("[LIGHT] reset released");
 
-    issue_req(make_nice_instr(F3_CLEAR), 32'b0, 32'd0, 0);
+    issue_req(make_nice_instr(X_NONE, FN_CLEAR), 32'b0, 32'd0, 0);
 
-    issue_req(make_nice_instr(F3_WLOAD), 32'h0a0a0a0a, 32'd0, 1);
-    issue_req(make_nice_instr(F3_WLOAD), 32'h0a0a0a0a, 32'd1, 2);
-    issue_req(make_nice_instr(F3_WLOAD), 32'h0a0a0a0a, 32'd2, 3);
-    issue_req(make_nice_instr(F3_WLOAD), 32'h0a0a0a0a, 32'd3, 4);
+    issue_req(make_nice_instr(X_RS1RS2, FN_WLOAD), 32'h0a0a0a0a, 32'd0, 1);
+    issue_req(make_nice_instr(X_RS1RS2, FN_WLOAD), 32'h0a0a0a0a, 32'd1, 2);
+    issue_req(make_nice_instr(X_RS1RS2, FN_WLOAD), 32'h0a0a0a0a, 32'd2, 3);
+    issue_req(make_nice_instr(X_RS1RS2, FN_WLOAD), 32'h0a0a0a0a, 32'd3, 4);
 
-    issue_req(make_nice_instr(F3_DLOAD), 32'h02020202, 32'd0, 5);
-    issue_req(make_nice_instr(F3_DLOAD), 32'h02020202, 32'd1, 6);
-    issue_req(make_nice_instr(F3_DLOAD), 32'h02020202, 32'd2, 7);
-    issue_req(make_nice_instr(F3_DLOAD), 32'h02020202, 32'd3, 8);
+    issue_req(make_nice_instr(X_RS1RS2, FN_DLOAD), 32'h02020202, 32'd0, 5);
+    issue_req(make_nice_instr(X_RS1RS2, FN_DLOAD), 32'h02020202, 32'd1, 6);
+    issue_req(make_nice_instr(X_RS1RS2, FN_DLOAD), 32'h02020202, 32'd2, 7);
+    issue_req(make_nice_instr(X_RS1RS2, FN_DLOAD), 32'h02020202, 32'd3, 8);
 
-    issue_req(make_nice_instr(F3_COMP), 32'b0, 32'd0, 9);
+    issue_req(make_nice_instr(X_NONE, FN_COMP), 32'b0, 32'd0, 9);
     while (nice_req_ready) @(posedge clk);
     while (!nice_req_ready) @(posedge clk);
     repeat (2) @(posedge clk);
-    issue_req(make_nice_instr(F3_RSTAT), 32'b0, 32'd0, 10);
+    issue_req(make_nice_instr(X_RD, FN_RSTAT), 32'b0, 32'd0, 10);
 
     repeat (20) @(posedge clk);
 
