@@ -1,4 +1,5 @@
 RUN_DIR      ?= $(CURDIR)
+SHELL        := /bin/bash
 
 TESTCASE     := ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/rv32ui-p-addi
 PATCHCASE    :=
@@ -67,7 +68,7 @@ ifeq ($(SIM_TOOL),vcs)
 SIM_EXEC      := ${RUN_DIR}/simv +ntb_random_seed_automatic
 endif
 ifeq ($(SIM_TOOL),iverilog)
-SIM_EXEC      := stdbuf -o0 -e0 vvp ${RUN_DIR}/vvp.exec -lxt2
+SIM_EXEC      := stdbuf -o0 -e0 vvp ${RUN_DIR}/vvp.exec
 endif
 
 
@@ -139,7 +140,7 @@ wave:
 run: compile
 	rm -rf ${TEST_RUNDIR}
 	mkdir ${TEST_RUNDIR}
-	cd ${TEST_RUNDIR}; ${SIM_EXEC} ${RUN_PLUSARGS} 2>&1 | tee ${TESTNAME}.log; cd ${RUN_DIR}; 
+	cd ${TEST_RUNDIR}; set -o pipefail; ${SIM_EXEC} ${RUN_PLUSARGS} 2>&1 | tee ${TESTNAME}.log; cd ${RUN_DIR}; 
 
 
 .PHONY: run clean all 

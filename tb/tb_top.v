@@ -12,6 +12,7 @@ module tb_top();
   `define CPU_TOP u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.u_e203_cpu_top
   `define EXU `CPU_TOP.u_e203_cpu.u_e203_core.u_e203_exu
   `define ITCM `CPU_TOP.u_e203_srams.u_e203_itcm_ram.u_e203_itcm_gnrl_ram.u_sirv_sim_ram
+  `define DTCM `CPU_TOP.u_e203_srams.u_e203_dtcm_ram.u_e203_dtcm_gnrl_ram.u_sirv_sim_ram
   `define U_CPU u_e203_soc_top.u_e203_subsys_top.u_e203_subsys_main.u_e203_cpu_top.u_e203_cpu
 
   `define PC_WRITE_TOHOST       `E203_PC_SIZE'h80000086
@@ -217,6 +218,7 @@ module tb_top();
 
   reg[8*300:1] testcase;
   reg[8*300:1] patchcase;
+  reg[8*300:1] dtcmcase;
   integer dumpwave;
   integer rst_release_delay;
 
@@ -227,6 +229,9 @@ module tb_top();
     end
     if($value$plusargs("PATCHCASE=%s",patchcase))begin
       $display("PATCHCASE=%s",patchcase);
+    end
+    if($value$plusargs("DTCMCASE=%s",dtcmcase))begin
+      $display("DTCMCASE=%s",dtcmcase);
     end
     rst_release_delay = 120;
     progress_stride = 0;
@@ -334,8 +339,10 @@ module tb_top();
 
 
   integer i;
+  integer j;
 
     reg [7:0] itcm_mem [0:(`E203_ITCM_RAM_DP*8)-1];
+    reg [7:0] dtcm_mem [0:(`E203_DTCM_RAM_DP*4)-1];
     initial begin
       $readmemh({testcase, ".verilog"}, itcm_mem);
       if($value$plusargs("PATCHCASE=%s",patchcase)) begin
@@ -365,6 +372,24 @@ module tb_top();
         $display("ITCM 0x20: %h", `ITCM.mem_r[8'h20]);
 
     end 
+
+    initial begin
+      if($value$plusargs("DTCMCASE=%s",dtcmcase)) begin
+        $readmemh({dtcmcase, ".verilog"}, dtcm_mem);
+
+        for (j=0;j<(`E203_DTCM_RAM_DP);j=j+1) begin
+            `DTCM.mem_r[j][00+7:00] = dtcm_mem[j*4+0];
+            `DTCM.mem_r[j][08+7:08] = dtcm_mem[j*4+1];
+            `DTCM.mem_r[j][16+7:16] = dtcm_mem[j*4+2];
+            `DTCM.mem_r[j][24+7:24] = dtcm_mem[j*4+3];
+        end
+
+        $display("DTCM 0x00: %h", `DTCM.mem_r[8'h00]);
+        $display("DTCM 0x01: %h", `DTCM.mem_r[8'h01]);
+        $display("DTCM 0x02: %h", `DTCM.mem_r[8'h02]);
+        $display("DTCM 0x03: %h", `DTCM.mem_r[8'h03]);
+      end
+    end
 
 
 
