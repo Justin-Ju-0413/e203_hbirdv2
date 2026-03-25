@@ -41,10 +41,11 @@ module tb_top();
   reg pc_write_to_host_flag;
   reg seen_nice_req;
   reg seen_nice_ready_low;
-  reg seen_rstat_320;
+  reg seen_expected_rstat;
   reg seen_patch_entry;
   reg seen_rst_release;
   integer progress_stride;
+  integer expected_rstat;
 
   always @(posedge hfclk or negedge rst_n)
   begin 
@@ -68,7 +69,7 @@ module tb_top();
         cycle_count <= 32'b0;
         seen_nice_req <= 1'b0;
         seen_nice_ready_low <= 1'b0;
-        seen_rstat_320 <= 1'b0;
+        seen_expected_rstat <= 1'b0;
         seen_patch_entry <= 1'b0;
         seen_rst_release <= 1'b0;
     end
@@ -97,12 +98,13 @@ module tb_top();
         end
         if(nice_rsp_valid && nice_rsp_ready) begin
             $display("[NICE_RSP] cycle=%0d rdat=%0d err=%0d", cycle_count, nice_rsp_rdat, nice_rsp_err);
-            if((nice_rsp_err == 1'b0) && (nice_rsp_rdat == 32'd320)) begin
-                seen_rstat_320 <= 1'b1;
+            if((nice_rsp_err == 1'b0) && ($signed(nice_rsp_rdat) == expected_rstat)) begin
+                seen_expected_rstat <= 1'b1;
             end
         end
-        if(seen_nice_req && seen_nice_ready_low && seen_rstat_320) begin
-            $display("[NICE_SUMMARY] request_seen=1 ready_low_seen=1 rstat_320_seen=1");
+        if(seen_nice_req && seen_nice_ready_low && seen_expected_rstat) begin
+            $display("[NICE_SUMMARY] request_seen=1 ready_low_seen=1 expected_rstat_seen=1 expected_rstat=%0d",
+                     expected_rstat);
             $finish;
         end
     end
@@ -223,7 +225,11 @@ module tb_top();
   integer rst_release_delay;
 
   initial begin
+    expected_rstat = 320;
     $display("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");  
+    if($value$plusargs("EXPECTED_RSTAT=%d", expected_rstat)) begin
+      $display("EXPECTED_RSTAT=%0d", expected_rstat);
+    end
     if($value$plusargs("TESTCASE=%s",testcase))begin
       $display("TESTCASE=%s",testcase);
     end
@@ -268,9 +274,9 @@ module tb_top();
         $display("~~~~~~~~~~~~~~~The final x3 Reg value: %d ~~~~~~~~~~~~~", x3);
         $display("~~~~~~~~~~~~~~~NICE request seen: %0d ~~~~~~~~~~~~~~~~~", seen_nice_req);
         $display("~~~~~~~~~~~~ NICE req_ready low seen: %0d ~~~~~~~~~~~~~", seen_nice_ready_low);
-        $display("~~~~~~~~~~~~~~~RSTAT returned 320: %0d ~~~~~~~~~~~~~~~~", seen_rstat_320);
+        $display("~~~~~~~~ expected RSTAT %0d seen: %0d ~~~~~~~~~~~~~~~~", expected_rstat, seen_expected_rstat);
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    if ((x3 == 1) && seen_nice_req && seen_nice_ready_low && seen_rstat_320) begin
+    if ((x3 == 1) && seen_nice_req && seen_nice_ready_low && seen_expected_rstat) begin
         $display("~~~~~~~~~~~~~~~~ TEST_PASS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         $display("~~~~~~~~~ #####     ##     ####    #### ~~~~~~~~~~~~~~~~");
