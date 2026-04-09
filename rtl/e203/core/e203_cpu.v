@@ -37,6 +37,18 @@ module e203_cpu #(
   output inspect_mem_rsp_valid,
   output inspect_mem_rsp_ready,
   output inspect_core_clk          ,
+  output                        probe_nice_csr_valid,
+  output                        probe_nice_csr_ready,
+  output [31:0]                 probe_nice_csr_addr,
+  output                        probe_nice_csr_wr,
+  output [31:0]                 probe_nice_csr_wdata,
+  output                        probe_nice_req_valid,
+  output                        probe_nice_req_ready,
+  output                        probe_nice_rsp_valid,
+  output                        probe_nice_rsp_ready,
+  output                        probe_commit_trap,
+  output                        probe_core_cgstop,
+  output                        probe_dbg_halt,
   output core_csr_clk      ,
   `ifdef E203_HAS_ITCM
   output rst_itcm,
@@ -892,5 +904,25 @@ module e203_cpu #(
   assign inspect_mem_rsp_ready = mem_icb_rsp_ready;
   assign inspect_core_clk   = clk;
   assign core_csr_clk       = clk_core_exu;
+`ifdef E203_HAS_CSR_NICE
+  assign probe_nice_csr_valid = nice_csr_valid;
+  assign probe_nice_csr_ready = nice_csr_ready;
+  assign probe_nice_csr_addr = nice_csr_addr;
+  assign probe_nice_csr_wr = nice_csr_wr;
+  assign probe_nice_csr_wdata = nice_csr_wdata;
+`else
+  assign probe_nice_csr_valid = 1'b0;
+  assign probe_nice_csr_ready = 1'b0;
+  assign probe_nice_csr_addr = 32'b0;
+  assign probe_nice_csr_wr = 1'b0;
+  assign probe_nice_csr_wdata = 32'b0;
+`endif
+  assign probe_nice_req_valid = nice_req_valid;
+  assign probe_nice_req_ready = nice_req_ready;
+  assign probe_nice_rsp_valid = nice_rsp_multicyc_valid;
+  assign probe_nice_rsp_ready = nice_rsp_multicyc_ready;
+  assign probe_commit_trap = 1'b0;
+  assign probe_core_cgstop = core_cgstop;
+  assign probe_dbg_halt = dbg_halt_r;
 
 endmodule

@@ -25,6 +25,7 @@
 // ====================================================================
 
 `include "e203_defines.v"
+`include "e203_fpga_mem_init.vh"
 
   `ifdef E203_HAS_ITCM //{
 module e203_itcm_ram(
@@ -49,6 +50,7 @@ module e203_itcm_ram(
       `ifndef E203_HAS_ECC//{
     .FORCE_X2ZERO(0),
       `endif//}
+    .INIT_FILE(`E203_ITCM_INIT_FILE),
     .DP(`E203_ITCM_RAM_DP),
     .DW(`E203_ITCM_RAM_DW),
     .MW(`E203_ITCM_RAM_MW),

@@ -27,6 +27,7 @@
 module sirv_sim_ram 
 #(parameter DP = 512,
   parameter FORCE_X2ZERO = 0,
+  parameter INIT_FILE = "",
   parameter DW = 32,
   parameter MW = 4,
   parameter AW = 32 
@@ -48,6 +49,16 @@ module sirv_sim_ram
 
     assign ren = cs & (~we);
     assign wen = ({MW{cs & we}} & wem);
+
+    initial begin : init_mem
+        integer idx;
+        if (INIT_FILE != "") begin
+            for (idx = 0; idx < DP; idx = idx + 1) begin
+                mem_r[idx] = {DW{1'b0}};
+            end
+            $readmemh(INIT_FILE, mem_r);
+        end
+    end
 
 
 

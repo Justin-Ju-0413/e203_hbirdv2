@@ -36,6 +36,24 @@ module e203_subsys_main(
 
   output inspect_pc_29b       ,
   output inspect_dbg_irq      ,
+  output [31:0] probe_pc      ,
+  output        probe_mem_cmd_valid,
+  output        probe_mem_cmd_ready,
+  output        probe_mem_rsp_valid,
+  output        probe_mem_rsp_ready,
+  output        probe_core_clk,
+  output        probe_nice_csr_valid,
+  output        probe_nice_csr_ready,
+  output [31:0] probe_nice_csr_addr,
+  output        probe_nice_csr_wr,
+  output [31:0] probe_nice_csr_wdata,
+  output        probe_nice_req_valid,
+  output        probe_nice_req_ready,
+  output        probe_nice_rsp_valid,
+  output        probe_nice_rsp_ready,
+  output        probe_commit_trap,
+  output        probe_core_cgstop,
+  output        probe_dbg_halt,
 
   input  inspect_mode, 
   input  inspect_por_rst, 
@@ -250,6 +268,12 @@ module e203_subsys_main(
  wire inspect_16m_clk;
 
  assign inspect_pc_29b = inspect_pc[29];
+ assign probe_pc = inspect_pc;
+ assign probe_mem_cmd_valid = inspect_mem_cmd_valid;
+ assign probe_mem_cmd_ready = inspect_mem_cmd_ready;
+ assign probe_mem_rsp_valid = inspect_mem_rsp_valid;
+ assign probe_mem_rsp_ready = inspect_mem_rsp_ready;
+ assign probe_core_clk = inspect_core_clk;
 
  wire  [32-1:0] gpioA_o_oval ;
  wire  [32-1:0] gpioA_o_oe   ;
@@ -475,6 +499,18 @@ module e203_subsys_main(
   .inspect_mem_rsp_valid    (inspect_mem_rsp_valid),
   .inspect_mem_rsp_ready    (inspect_mem_rsp_ready),
   .inspect_core_clk         (inspect_core_clk),
+  .probe_nice_csr_valid     (probe_nice_csr_valid),
+  .probe_nice_csr_ready     (probe_nice_csr_ready),
+  .probe_nice_csr_addr      (probe_nice_csr_addr),
+  .probe_nice_csr_wr        (probe_nice_csr_wr),
+  .probe_nice_csr_wdata     (probe_nice_csr_wdata),
+  .probe_nice_req_valid     (probe_nice_req_valid),
+  .probe_nice_req_ready     (probe_nice_req_ready),
+  .probe_nice_rsp_valid     (probe_nice_rsp_valid),
+  .probe_nice_rsp_ready     (probe_nice_rsp_ready),
+  .probe_commit_trap        (probe_commit_trap),
+  .probe_core_cgstop        (probe_core_cgstop),
+  .probe_dbg_halt           (probe_dbg_halt),
 
   .core_csr_clk          (core_csr_clk      ),
 

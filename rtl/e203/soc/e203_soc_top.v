@@ -84,7 +84,25 @@ module e203_soc_top(
 
       // PMU output is just output without enable
   output io_pads_aon_pmu_padrst_o_oval,
-  output io_pads_aon_pmu_vddpaden_o_oval 
+  output io_pads_aon_pmu_vddpaden_o_oval,
+  output [31:0] probe_pc,
+  output        probe_mem_cmd_valid,
+  output        probe_mem_cmd_ready,
+  output        probe_mem_rsp_valid,
+  output        probe_mem_rsp_ready,
+  output        probe_core_clk,
+  output        probe_nice_csr_valid,
+  output        probe_nice_csr_ready,
+  output [31:0] probe_nice_csr_addr,
+  output        probe_nice_csr_wr,
+  output [31:0] probe_nice_csr_wdata,
+  output        probe_nice_req_valid,
+  output        probe_nice_req_ready,
+  output        probe_nice_rsp_valid,
+  output        probe_nice_rsp_ready,
+  output        probe_commit_trap,
+  output        probe_core_cgstop,
+  output        probe_dbg_halt
 );
 
 
@@ -100,6 +118,24 @@ module e203_soc_top(
 
  e203_subsys_top u_e203_subsys_top(
     .core_mhartid      (1'b0),
+    .probe_pc          (probe_pc),
+    .probe_mem_cmd_valid (probe_mem_cmd_valid),
+    .probe_mem_cmd_ready (probe_mem_cmd_ready),
+    .probe_mem_rsp_valid (probe_mem_rsp_valid),
+    .probe_mem_rsp_ready (probe_mem_rsp_ready),
+    .probe_core_clk      (probe_core_clk),
+    .probe_nice_csr_valid (probe_nice_csr_valid),
+    .probe_nice_csr_ready (probe_nice_csr_ready),
+    .probe_nice_csr_addr  (probe_nice_csr_addr),
+    .probe_nice_csr_wr    (probe_nice_csr_wr),
+    .probe_nice_csr_wdata (probe_nice_csr_wdata),
+    .probe_nice_req_valid (probe_nice_req_valid),
+    .probe_nice_req_ready (probe_nice_req_ready),
+    .probe_nice_rsp_valid (probe_nice_rsp_valid),
+    .probe_nice_rsp_ready (probe_nice_rsp_ready),
+    .probe_commit_trap    (probe_commit_trap),
+    .probe_core_cgstop    (probe_core_cgstop),
+    .probe_dbg_halt       (probe_dbg_halt),
   
 
 

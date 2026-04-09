@@ -29,6 +29,7 @@ module sirv_gnrl_ram
 #(parameter DP = 32,
   parameter DW = 32,
   parameter FORCE_X2ZERO = 1,
+  parameter INIT_FILE = "",
   parameter MW = 4,
   parameter AW = 15 
   ) (
@@ -52,6 +53,7 @@ module sirv_gnrl_ram
 `ifdef FPGA_SOURCE
 sirv_sim_ram #(
     .FORCE_X2ZERO (1'b0),
+    .INIT_FILE (INIT_FILE),
     .DP (DP),
     .AW (AW),
     .MW (MW),
@@ -69,6 +71,7 @@ sirv_sim_ram #(
 
 sirv_sim_ram #(
     .FORCE_X2ZERO (FORCE_X2ZERO),
+    .INIT_FILE (INIT_FILE),
     .DP (DP),
     .AW (AW),
     .MW (MW),
