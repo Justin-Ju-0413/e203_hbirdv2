@@ -8,6 +8,23 @@ Hummingbirdv2 E203 Core and SoC
 freely use for academic and non-commercial projects.  
 > Explore it here: [Nuclei-Software/e603_hbird](https://github.com/Nuclei-Software/e603_hbird)
 
+Branch Entry
+------------
+
+The GitHub default branch is retained for historical compatibility, but it is
+not the current development entry point for the paired CNN bring-up work.
+
+| Role | This repo branch | Paired accelerator repo branch |
+|------|------------------|--------------------------------|
+| Historical default line | `master` | `main` |
+| Stable formal line | `cnn_bringup_v1` | `bringup_v1` |
+| Current active development line | `codex/a7-bringup-v2-soc` | `codex/a7-bringup-v2-main` |
+
+Use `cnn_bringup_v1` for stable reporting and baseline recovery. Use
+`codex/a7-bringup-v2-soc` for current A7-100T / Route-A bring-up work. See
+[`docs/BRANCH_STRATEGY.md`](docs/BRANCH_STRATEGY.md) for the full branch policy
+and branch snapshot.
+
 About
 -----
 
