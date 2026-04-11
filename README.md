@@ -8,6 +8,22 @@ Hummingbirdv2 E203 Core and SoC
 freely use for academic and non-commercial projects.  
 > Explore it here: [Nuclei-Software/e603_hbird](https://github.com/Nuclei-Software/e603_hbird)
 
+Branch Entry
+------------
+
+This branch is the current active SoC development line for A7-100T / Route-A
+bring-up. The stable formal line remains `cnn_bringup_v1`, and the historical
+default line remains `master`.
+
+| Role | This repo branch | Paired accelerator repo branch |
+|------|------------------|--------------------------------|
+| Historical default line | `master` | `main` |
+| Stable formal line | `cnn_bringup_v1` | `bringup_v1` |
+| Current active development line | `codex/a7-bringup-v2-soc` | `codex/a7-bringup-v2-main` |
+
+See [`docs/BRANCH_STRATEGY.md`](docs/BRANCH_STRATEGY.md) for the full branch
+policy and branch snapshot.
+
 About
 -----
 
