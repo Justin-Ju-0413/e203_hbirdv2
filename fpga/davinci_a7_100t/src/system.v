@@ -181,7 +181,7 @@ module system
   );
 
   ila_runtime u_ila_runtime (
-    .clk(probe_core_clk),
+    .clk(clk_16M),
     .probe0(probe_pc),
     .probe1(probe_mem_bus),
     .probe2(probe_csr_flags),
