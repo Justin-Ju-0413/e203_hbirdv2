@@ -1,2 +1,21 @@
 riscv-tools/prebuilt_tools/prefix/*
 doc/build
+
+# Vivado generated artifacts
+*.bit
+*.mcs
+*.ltx
+*.jou
+*.log
+*.str
+*.wdb
+*.xpr
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/
+*.gen/
+fpga/**/obj/
+fpga/**/_propcheck/
