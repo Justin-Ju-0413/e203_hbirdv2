@@ -15,3 +15,7 @@ if {[info exists ::env(EXTRA_VSRCS)] && $::env(EXTRA_VSRCS) ne ""} {
   add_files -norecurse $extra_srcfiles
 }
 add_files -fileset constrs_1 [glob -nocomplain [file join $origin_dir constrs *.xdc]]
+if {[info exists ::env(EXTRA_XDCS)] && $::env(EXTRA_XDCS) ne ""} {
+  set extra_xdcfiles [split $::env(EXTRA_XDCS) "\n"]
+  add_files -fileset constrs_1 $extra_xdcfiles
+}
