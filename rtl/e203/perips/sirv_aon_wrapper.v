@@ -381,8 +381,12 @@ module sirv_aon_wrapper(
   //
   //  This signal will be passed to the main domain, since this is kind of pad selected signal
   //    we dont need to sync them in main domain, just directly use it
-  assign pc_rtvec = aon_io_bootrom ? 32'h0000_1000 : 
+  `ifdef E203_FORCE_BOOTROM_BOOT
+  assign pc_rtvec = 32'h0000_1000;
+  `else
+  assign pc_rtvec = aon_io_bootrom ? 32'h0000_1000 :
       // This is the external QSPI flash base address 
                                      32'h2000_0000;
+  `endif
 
 endmodule

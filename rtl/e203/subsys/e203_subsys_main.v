@@ -41,6 +41,7 @@ module e203_subsys_main(
   output        probe_mem_cmd_ready,
   output        probe_mem_rsp_valid,
   output        probe_mem_rsp_ready,
+  output [31:0] probe_mem_cmd_addr,
   output        probe_core_clk,
   output        probe_nice_csr_valid,
   output        probe_nice_csr_ready,
@@ -277,6 +278,7 @@ module e203_subsys_main(
  assign probe_mem_cmd_ready = inspect_mem_cmd_ready;
  assign probe_mem_rsp_valid = inspect_mem_rsp_valid;
  assign probe_mem_rsp_ready = inspect_mem_rsp_ready;
+assign probe_mem_cmd_addr = mem_icb_cmd_addr;
  assign probe_core_clk = inspect_core_clk;
 
  wire  [32-1:0] gpioA_o_oval ;
