@@ -49,6 +49,10 @@ module e203_cpu #(
   output                        probe_commit_trap,
   output                        probe_core_cgstop,
   output                        probe_dbg_halt,
+  output                        probe_ifu_cmd_valid,
+  output                        probe_ifu_cmd_ready,
+  output                        probe_ifu_rsp_valid,
+  output                        probe_ifu_rsp_ready,
   output core_csr_clk      ,
   `ifdef E203_HAS_ITCM
   output rst_itcm,
@@ -924,5 +928,9 @@ module e203_cpu #(
   assign probe_commit_trap = 1'b0;
   assign probe_core_cgstop = core_cgstop;
   assign probe_dbg_halt = dbg_halt_r;
+  assign probe_ifu_cmd_valid = ifu2itcm_icb_cmd_valid;
+  assign probe_ifu_cmd_ready = ifu2itcm_icb_cmd_ready;
+  assign probe_ifu_rsp_valid = ifu2itcm_icb_rsp_valid;
+  assign probe_ifu_rsp_ready = ifu2itcm_icb_rsp_ready;
 
 endmodule

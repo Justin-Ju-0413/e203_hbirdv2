@@ -94,6 +94,10 @@ module e203_subsys_top(
   output        probe_commit_trap,
   output        probe_core_cgstop,
   output        probe_dbg_halt,
+  output        probe_ifu_cmd_valid,
+  output        probe_ifu_cmd_ready,
+  output        probe_ifu_rsp_valid,
+  output        probe_ifu_rsp_ready,
 
 
   input  [`E203_HART_ID_W-1:0] core_mhartid,  
@@ -355,6 +359,10 @@ module e203_subsys_top(
     .probe_commit_trap    (probe_commit_trap),
     .probe_core_cgstop    (probe_core_cgstop),
     .probe_dbg_halt       (probe_dbg_halt),
+    .probe_ifu_cmd_valid  (probe_ifu_cmd_valid),
+    .probe_ifu_cmd_ready  (probe_ifu_cmd_ready),
+    .probe_ifu_rsp_valid  (probe_ifu_rsp_valid),
+    .probe_ifu_rsp_ready  (probe_ifu_rsp_ready),
     .inspect_jtag_clk(inspect_jtag_clk),
     .core_csr_clk    (core_csr_clk    ),
 
