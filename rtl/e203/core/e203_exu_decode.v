@@ -682,17 +682,19 @@ module e203_exu_decode(
   //   * store
   //   * rv32_op
   //   * rv32_amo except the rv32_lr_w
-  wire rv32_need_rs2 = (~rv32_rs2_x0) & (
+  // NICE instructions use rs2 field to encode accelerator vector index (0-3),
+  // not a GPR number.  Must NOT gate on rv32_rs2_x0, or index=0 (rs2 field=5'b00000)
+  // is mistaken for "no rs2 needed" and the IFU skips updating ir_rs2idx_r.
+  wire rv32_need_rs2 =
                  `ifdef E203_HAS_NICE//{
                  nice_op ? nice_need_rs2 :
                  `endif//}
-                (
+                 ((~rv32_rs2_x0) & (
                  (rv32_branch)
                | (rv32_store)
                | (rv32_op)
                | (rv32_amo & (~rv32_lr_w))
-                 )
-                 );
+                 ));
 
   wire [31:0]  rv32_i_imm = { 
                                {20{rv32_instr[31]}} 
