@@ -11,18 +11,20 @@ freely use for academic and non-commercial projects.
 Branch Entry
 ------------
 
-This branch is the current active SoC development line for A7-100T / Route-A
-bring-up. The stable formal line remains `cnn_bringup_v1`, and the historical
-default line remains `master`.
+This branch is the validated SoC counterpart for the E203/NICE CNN accelerator.
+The remote default branch is now `main`. The removed `master` and
+`cnn_bringup_v1` branches are historical references only and must not be used
+in new setup instructions.
 
 | Role | This repo branch | Paired accelerator repo branch |
 |------|------------------|--------------------------------|
-| Historical default line | `master` | `main` |
-| Stable formal line | `cnn_bringup_v1` | `bringup_v1` |
-| Current active development line | `codex/a7-bringup-v2-soc` | `codex/a7-bringup-v2-main` |
+| Default/upstream-oriented line | `main` | `main` |
+| Validated engineering baseline | `codex/a7-bringup-v2-soc` | `codex/a7-bringup-v2-main` |
+| 2026-07-27 maintenance PR | `codex/env-baseline-20260727-soc` | `codex/env-baseline-20260727` |
 
 See [`docs/BRANCH_STRATEGY.md`](docs/BRANCH_STRATEGY.md) for the full branch
-policy and branch snapshot.
+policy and branch snapshot. Reproducibility work must not change the NICE
+decoder fix, FPGA RTL, or the software-visible command interface.
 
 About
 -----
