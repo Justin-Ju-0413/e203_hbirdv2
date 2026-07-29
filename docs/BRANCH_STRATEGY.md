@@ -1,6 +1,6 @@
 # Branch Strategy
 
-> Snapshot date: 2026-07-27 (Asia/Shanghai)
+> Snapshot date: 2026-07-29 (Asia/Singapore)
 
 This file mirrors the branch policy in the paired accelerator repository. The
 default branches and validated engineering branches have diverged, so the
@@ -14,8 +14,10 @@ force-update `main`.
 | `riscv_cnn_accelerator` | `main` | Default historical line | No |
 | `riscv_cnn_accelerator` | `bringup_v1` | Retained stable milestone | Recovery/reporting only |
 | `riscv_cnn_accelerator` | `codex/a7-bringup-v2-main` | Validated FYP engineering baseline | Yes |
+| `riscv_cnn_accelerator` | `codex/mphil-tensor-scan-20260729` | MPhil data-movement research | Yes, research only |
 | `e203_hbirdv2` | `main` | Default/upstream-oriented line | No |
 | `e203_hbirdv2` | `codex/a7-bringup-v2-soc` | Validated paired SoC baseline | Yes |
+| `e203_hbirdv2` | `codex/mphil-tensor-scan-20260729-soc` | Paired MPhil SoC research | Yes, research only |
 
 The former SoC branches `master` and `cnn_bringup_v1` no longer exist on
 GitHub. Do not recreate them merely to satisfy old documentation.
@@ -35,6 +37,20 @@ The pair contains the A7-100T bring-up, CNN/NICE board evidence, and the NICE
 
 Both branches are documentation/environment maintenance branches. Their Draft
 PRs target the active engineering branches, not `main`.
+
+## 2026-07-29 MPhil Research Branches
+
+- Accelerator: `codex/mphil-tensor-scan-20260729`
+- SoC: `codex/mphil-tensor-scan-20260729-soc`
+
+These branches are based on the environment baselines. They introduce the first
+compatible NICE v2 ICB-to-scratchpad proof of concept. Legacy funct7 `0–5`,
+the E203 decoder fix, FPGA RTL, and board constraints remain unchanged.
+
+Recorded compatibility result: original 19 RTL tests, `LIGHT_PASS`,
+`PHASE4_PASS` with `RSTAT=19`, and `PREBOARD_PASS`. The new memory path has
+standalone directed coverage; Full-SoC NICE v2 software, synthesis, Vivado, and
+physical-board validation remain future gates.
 
 ## Rules
 
