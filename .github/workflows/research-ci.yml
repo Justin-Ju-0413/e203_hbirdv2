@@ -1,0 +1,30 @@
+name: Research Navigation CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install simulator
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Preprocess upstream NICE core
+        run: >-
+          iverilog -g2012 -E -o /dev/null
+          -I rtl/e203/core -I rtl/e203/general -I rtl/e203/subsys
+          rtl/e203/subsys/e203_subsys_nice_core.v
+      - name: Verify immutable paired release navigation
+        run: |
+          grep -q 'env-baseline-2026-07-27' README.md
+          grep -q 'mphil-nice-v2-poc-v0.1.0' README.md
+          git ls-remote --exit-code --tags https://github.com/Justin-Ju-0413/e203_hbirdv2.git refs/tags/env-baseline-2026-07-27
+          git ls-remote --exit-code --tags https://github.com/Justin-Ju-0413/e203_hbirdv2.git refs/tags/mphil-nice-v2-poc-v0.1.0
+          git ls-remote --exit-code --tags https://github.com/Justin-Ju-0413/riscv_cnn_accelerator.git refs/tags/env-baseline-2026-07-27
+          git ls-remote --exit-code --tags https://github.com/Justin-Ju-0413/riscv_cnn_accelerator.git refs/tags/mphil-nice-v2-poc-v0.1.0
