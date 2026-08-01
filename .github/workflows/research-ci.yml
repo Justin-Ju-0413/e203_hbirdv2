@@ -1,0 +1,40 @@
+name: Paired Research CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  paired-rtl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install simulator and cross-compile tools
+        run: sudo apt-get update && sudo apt-get install -y iverilog gcc-riscv64-unknown-elf
+      - name: Compile integrated accelerator RTL
+        run: iverilog -g2012 -tnull rtl/e203/subsys/pe.v rtl/e203/subsys/pe_array.v rtl/e203/subsys/cnn_nice_core.v
+      - name: Select the paired accelerator research branch
+        id: pair
+        run: |
+          if grep -q 'FN_CAP' rtl/e203/subsys/cnn_nice_core.v; then
+            echo 'branch=codex/mphil-tensor-scan-20260729' >> "$GITHUB_OUTPUT"
+          else
+            echo 'branch=codex/env-baseline-20260727' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Check paired RTL and run accelerator gates
+        run: |
+          git clone --depth 1 --branch '${{ steps.pair.outputs.branch }}' https://github.com/Justin-Ju-0413/riscv_cnn_accelerator.git /tmp/accelerator
+          cmp rtl/e203/subsys/cnn_nice_core.v /tmp/accelerator/hw/rtl/acc/cnn_nice_core.v
+          python3 /tmp/accelerator/algo/python/generate_model.py
+          if find /tmp/accelerator/algo/python -maxdepth 1 -name 'test_*.py' | grep -q .; then
+            python3 -m unittest discover -s /tmp/accelerator/algo/python -p 'test_*.py' -v
+          fi
+          make -C /tmp/accelerator/hw/sim run
+          if grep -q '^run_v2:' /tmp/accelerator/hw/sim/Makefile; then
+            make -C /tmp/accelerator/hw/sim run_v2
+            riscv64-unknown-elf-gcc -march=rv32imac -mabi=ilp32 -I/tmp/accelerator/sw/inc -fsyntax-only /tmp/accelerator/sw/nice_v2_compile_smoke.c
+          fi
