@@ -22,10 +22,19 @@ in new setup instructions.
 | Default/upstream-oriented line | `main` | `main` |
 | Validated engineering baseline | `codex/a7-bringup-v2-soc` | `codex/a7-bringup-v2-main` |
 | 2026-07-27 maintenance PR | `codex/env-baseline-20260727-soc` | `codex/env-baseline-20260727` |
+| MPhil tensor/scan research | `codex/mphil-tensor-scan-20260729-soc` | `codex/mphil-tensor-scan-20260729` |
 
 See [`docs/BRANCH_STRATEGY.md`](docs/BRANCH_STRATEGY.md) for the full branch
 policy and branch snapshot. Reproducibility work must not change the NICE
 decoder fix, FPGA RTL, or the software-visible command interface.
+
+The MPhil research branch adds a capability-discovered, aligned single-word
+NICE ICB read path and two parameterized scratchpad banks while preserving
+legacy funct7 `0–5`. On 2026-07-29 the paired branches passed the original
+19-test RTL regression, `LIGHT_PASS`, `PHASE4_PASS` with `RSTAT=19`, and
+`PREBOARD_PASS`. This proves legacy compatibility; the new memory path has
+standalone directed RTL coverage but has not yet been executed by a Full-SoC
+SDK application. Vivado and a physical board were not run.
 
 Paired release records must follow [`docs/RELEASE_PAIRING.md`](docs/RELEASE_PAIRING.md). Experimental NICE v2 work remains on the MPhil research branch and does not enter `main` as part of baseline maintenance.
 
