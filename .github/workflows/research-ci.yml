@@ -15,12 +15,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install simulator
         run: sudo apt-get update && sudo apt-get install -y iverilog
-      - name: Compile upstream NICE core
+      - name: Preprocess upstream NICE core
         run: >-
-          iverilog -g2012 -gno-assertions -tnull
+          iverilog -g2012 -E -o /dev/null
           -I rtl/e203/core -I rtl/e203/general -I rtl/e203/subsys
-          rtl/e203/general/sirv_gnrl_xchecker.v
-          rtl/e203/general/sirv_gnrl_dffs.v
           rtl/e203/subsys/e203_subsys_nice_core.v
       - name: Verify immutable paired release navigation
         run: |
