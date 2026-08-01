@@ -2,6 +2,7 @@ Hummingbirdv2 E203 Core and SoC
 ===============================
 
 [![Deploy Documentation](https://github.com/riscv-mcu/e203_hbirdv2/workflows/Deploy%20Documentation/badge.svg)](https://doc.nucleisys.com/hbirdv2)
+[![Paired Research CI](https://github.com/Justin-Ju-0413/e203_hbirdv2/actions/workflows/research-ci.yml/badge.svg)](https://github.com/Justin-Ju-0413/e203_hbirdv2/actions/workflows/research-ci.yml)
 
 > [!NOTE]
 > **Hummingbird E603** is now available —— a 64-bit RISC-V core you can
@@ -34,6 +35,8 @@ legacy funct7 `0–5`. On 2026-07-29 the paired branches passed the original
 `PREBOARD_PASS`. This proves legacy compatibility; the new memory path has
 standalone directed RTL coverage but has not yet been executed by a Full-SoC
 SDK application. Vivado and a physical board were not run.
+
+Paired release records must follow [`docs/RELEASE_PAIRING.md`](docs/RELEASE_PAIRING.md). Experimental NICE v2 work remains on the MPhil research branch and does not enter `main` as part of baseline maintenance.
 
 About
 -----
