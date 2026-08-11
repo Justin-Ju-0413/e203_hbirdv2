@@ -1,7 +1,7 @@
 Hummingbirdv2 E203 Core and SoC 
 ===============================
 
-[![Deploy Documentation](https://github.com/riscv-mcu/e203_hbirdv2/workflows/Deploy%20Documentation/badge.svg)](https://doc.nucleisys.com/hbirdv2)
+[![Research Navigation CI](https://github.com/Justin-Ju-0413/e203_hbirdv2/actions/workflows/research-ci.yml/badge.svg)](https://github.com/Justin-Ju-0413/e203_hbirdv2/actions/workflows/research-ci.yml)
 
 > [!NOTE]
 > **Hummingbird E603** is now available —— a 64-bit RISC-V core you can
@@ -11,22 +11,24 @@ freely use for academic and non-commercial projects.
 Branch Entry
 ------------
 
-The GitHub default branch is retained for historical compatibility, but it is
-not the current development entry point for the paired CNN bring-up work.
+`main` is the maintained landing branch for documentation, CI, and paired
+Release navigation. The FYP is complete; retained engineering branches are
+research snapshots rather than active delivery lines.
 
 | Role | This repo branch | Paired accelerator repo branch |
 |------|------------------|--------------------------------|
-| Historical default line | `main` | `main` |
-| Stable FYP engineering line | `codex/a7-bringup-v2-soc` | `codex/a7-bringup-v2-main` |
+| Maintained landing line | `main` | `main` |
+| Retained A7 engineering snapshot | `codex/a7-bringup-v2-soc` | `codex/a7-bringup-v2-main` |
 | Reproducible baseline milestone | [`env-baseline-2026-07-27`](https://github.com/Justin-Ju-0413/e203_hbirdv2/releases/tag/env-baseline-2026-07-27) | [`env-baseline-2026-07-27`](https://github.com/Justin-Ju-0413/riscv_cnn_accelerator/releases/tag/env-baseline-2026-07-27) |
 | MPhil NICE v2 PoC | [`mphil-nice-v2-poc-v0.1.0`](https://github.com/Justin-Ju-0413/e203_hbirdv2/releases/tag/mphil-nice-v2-poc-v0.1.0) | [`mphil-nice-v2-poc-v0.1.0`](https://github.com/Justin-Ju-0413/riscv_cnn_accelerator/releases/tag/mphil-nice-v2-poc-v0.1.0) |
 
 Start with the paired Releases above: the baseline is the reproducible FYP
 environment, while the MPhil tag is a bounded `CAP`/`MLOAD`/`MSTAT` proof of
-concept. The experimental work does not imply tiled GEMM, DMA, complete
-Vision Mamba, or full MNIST acceleration. See
+concept. The experimental work does not imply tiled GEMM, DMA, `MEXEC` or
+`MSTORE`, complete Vision Mamba, or full MNIST acceleration. See
 [`docs/BRANCH_STRATEGY.md`](docs/BRANCH_STRATEGY.md) for the historical branch
-policy.
+roles and the reason older Release workflow runs could fail despite matching
+tag contents.
 
 About
 -----
