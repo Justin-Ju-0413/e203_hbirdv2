@@ -3,6 +3,7 @@ name: Research Navigation CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -28,3 +29,51 @@ jobs:
           git ls-remote --exit-code --tags https://github.com/Justin-Ju-0413/e203_hbirdv2.git refs/tags/mphil-nice-v2-poc-v0.1.0
           git ls-remote --exit-code --tags https://github.com/Justin-Ju-0413/riscv_cnn_accelerator.git refs/tags/env-baseline-2026-07-27
           git ls-remote --exit-code --tags https://github.com/Justin-Ju-0413/riscv_cnn_accelerator.git refs/tags/mphil-nice-v2-poc-v0.1.0
+
+  paired-releases:
+    name: paired-releases
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        tag:
+          - env-baseline-2026-07-27
+          - mphil-nice-v2-poc-v0.1.0
+    steps:
+      - name: Check out SoC release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.tag }}
+          path: soc
+      - name: Check out matching accelerator release
+        uses: actions/checkout@v4
+        with:
+          repository: Justin-Ju-0413/riscv_cnn_accelerator
+          ref: ${{ matrix.tag }}
+          path: accelerator
+      - name: Install simulator and cross-compile tools
+        run: sudo apt-get update && sudo apt-get install -y iverilog gcc-riscv64-unknown-elf
+      - name: Verify paired RTL
+        run: |
+          iverilog -g2012 -tnull \
+            soc/rtl/e203/subsys/pe.v \
+            soc/rtl/e203/subsys/pe_array.v \
+            soc/rtl/e203/subsys/cnn_nice_core.v
+          cmp \
+            soc/rtl/e203/subsys/cnn_nice_core.v \
+            accelerator/hw/rtl/acc/cnn_nice_core.v
+      - name: Run accelerator gates
+        working-directory: accelerator
+        run: |
+          python3 algo/python/generate_model.py
+          if find algo/python -maxdepth 1 -name 'test_*.py' | grep -q .; then
+            python3 -m unittest discover -s algo/python -p 'test_*.py' -v
+          fi
+          make -C hw/sim run
+          if grep -q '^run_v2:' hw/sim/Makefile; then
+            make -C hw/sim run_v2
+            riscv64-unknown-elf-gcc \
+              -march=rv32imac -mabi=ilp32 -I sw/inc -fsyntax-only \
+              sw/nice_v2_compile_smoke.c
+          fi
